@@ -1,0 +1,5 @@
+Basic Goals:
+1. Try compression techniques
+2. Try Different Modulate Structure
+3. Record BER and picture received.
+
