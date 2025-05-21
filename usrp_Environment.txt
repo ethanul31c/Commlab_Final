@@ -1,0 +1,7 @@
+1. 確保電腦有conda (Miniconda就可以)
+2. 創建python3.9的環境(名稱usrp_env)
+    conda create -n usrp_env python=3.9
+    conda activate usrp_env
+    (不用的時候 conda deactivate)
+3. 
+
