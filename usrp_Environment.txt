@@ -1,7 +1,19 @@
+------CONDA 環境設置-------
 1. 確保電腦有conda (Miniconda就可以)
 2. 創建python3.9的環境(名稱usrp_env)
     conda create -n usrp_env python=3.9
     conda activate usrp_env
     (不用的時候 conda deactivate)
-3. 
+3. 確保前面有(usrp_env)才算有activate成功
 
+------VSCode Terminal 啟動設定檔-------
+1. Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned -Force
+2. Get-ExecutionPolicy -Scope CurrentUser
+    要顯示RemoteSigned
+3. notepad $PROFILE
+4. 把以下兩行貼到notepad裡存檔:
+    Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+    & "C:\Users\Ethan\miniconda3\shell\condabin\conda-hook.ps1"
+    $env:Path += ";C:\Program Files\UHD\bin;C:\Program Files\UHD\lib"
+    $env:UHD_PKG_PATH = "C:\Program Files\UHD"
+5. 重開VSCode 應該可以正常conda activate
