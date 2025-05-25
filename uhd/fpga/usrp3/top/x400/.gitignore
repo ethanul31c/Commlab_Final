@@ -1,6 +1,0 @@
-build
-build-*
-*.log
-*.jou
-vivado*.str
-ip/*/sim/

@@ -1,19 +1,39 @@
-------CONDA 環境設置-------
-1. 確保電腦有conda (Miniconda就可以)
-2. 創建python3.9的環境(名稱usrp_env)
-    conda create -n usrp_env python=3.9
-    conda activate usrp_env
-    (不用的時候 conda deactivate)
-3. 確保前面有(usrp_env)才算有activate成功
+----python UHD setup----
 
-------VSCode Terminal 啟動設定檔-------
-1. Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned -Force
-2. Get-ExecutionPolicy -Scope CurrentUser
-    要顯示RemoteSigned
-3. notepad $PROFILE
-4. 把以下兩行貼到notepad裡存檔:
-    Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-    & "C:\Users\Ethan\miniconda3\shell\condabin\conda-hook.ps1"
-    $env:Path += ";C:\Program Files\UHD\bin;C:\Program Files\UHD\lib"
-    $env:UHD_PKG_PATH = "C:\Program Files\UHD"
-5. 重開VSCode 應該可以正常conda activate
+1.  Environment >>  WSL:Ubuntu-22.04
+2.  設置過程參考 >>  https://pysdr.org/content/usrp.html
+                >>  "Installing UHD and Python API" 
+
+    或是ChatGPT:
+    sudo apt update
+    sudo apt install -y \
+        cmake build-essential \
+        python3-dev python3-pip pybind11-dev \
+        libuhd-dev libboost-all-dev
+    然後
+    cd ~/uhd/host
+    mkdir -p build
+    cd build
+    cmake -DENABLE_PYTHON_API=ON ..
+    make -j$(nproc)
+    sudo make install
+    sudo ldconfig
+
+3. 手動加進System Path >>
+    echo 'export PYTHONPATH=/usr/local/lib/python3.10/site-packages:$PYTHONPATH' >> ~/.bashrc
+    source ~/.bashrc
+
+
+4. 測試 >>
+    a. 執行 uhd_usrp_probe --args="addr=192.168.10.2"
+
+5. 永久增加buffer大小
+    sudo nano /etc/sysctl.conf
+
+    在檔案末尾加上：
+
+        net.core.rmem_max=50000000
+        net.core.wmem_max=50000000
+
+    使config檔案生效：
+    sudo sysctl -p

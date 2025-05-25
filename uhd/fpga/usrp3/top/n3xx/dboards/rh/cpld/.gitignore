@@ -1,7 +1,0 @@
-# Ignore Quartus generated files upon project opening.
-*.qws
-db/
-incremental_db/
-output_files/
-*.sopcinfo
-build/
