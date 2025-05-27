@@ -1,4 +1,23 @@
-Basic Goals:
+
+
+
+>>>>>>>>>> USRP Final of Picture Transmission <<<<<<<<<<
+H：謝函蓁
+E：臧逸新
+Y：俞柏安
+
+############## Expected Progress ############## 
+Week 1(5/21 - 5/28)：
+    ALL：
+        1. Complete at least 5 packages transmitted at once in 1 USRP.
+        2. At least 1 picture transmitted succesfully (JPG).
+        3. Succesfully transform pictures into bitstream and transmitted bitstream to picture.
+        4. Try compressing pictures on our own (BMP).
+        5. Research different modulate techniques.
+        6. Matlab functions packaged into python libraries.
+
+
+############## Basic Goals ############## 
 1. Try compression techniques
 2. Try Different Modulate Structure
 3. Record BER and picture received.
