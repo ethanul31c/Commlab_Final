@@ -103,7 +103,10 @@ function received_buffer = test_one_frame()
 
     single_LTS = LTS(end-64+1:end);
     [sts_start, lts_start, ofdm_start] = find_starts(buffer(sec_beg:sec_end), sec_beg, single_LTS)
-    fprintf("ofdm_start = ")
+    fprintf("ofdm_start = %d" ,ofdm_start);
+
+    save('received_test.mat', 'single_STS', "single_LTS")
+
 
     % % plot the location of estimated starts
     % figure;

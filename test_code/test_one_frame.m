@@ -1,4 +1,4 @@
-function received_buffer = test_one_frame()
+function test_one_frame()
     
     clc; clear; close all;
     
@@ -102,8 +102,11 @@ function received_buffer = test_one_frame()
     
 
     single_LTS = LTS(end-64+1:end);
-    [sts_start, lts_start, ofdm_start] = find_starts(buffer(sec_beg:sec_end), sec_beg, single_LTS)
+    [sts_start, lts_start, ofdm_start] = find_starts(buffer(sec_beg:sec_end), sec_beg, single_LTS);
     fprintf("ofdm_start = %d" ,ofdm_start);
+
+    save('received_test.mat',"sts_start", "lts_start", "ofdm_start" ,"sig_100", "bits_tx", "single_STS", "single_LTS", "sec_beg" , "sec_end", "received_buffer");
+
 
     % plot the location of estimated starts
     figure;
@@ -120,7 +123,7 @@ function received_buffer = test_one_frame()
     xticklabels(xt * ts*1e6);
     xlabel('Time (microseconds)');
     ylabel('Amplitude');
-    title('4. Time-Domain received signal (real)');
+    title('Time-Domain received signal (real)');
     legend('received signal','sts\_start', 'lts\_start', 'ofdm\_start', 'frame\_end');
 
 end
