@@ -16,6 +16,6 @@ def c420(img):
   return img_ycbcr_com
 
 if __name__ == "__main__":
-    data = plt.imread("../test_code/PeppersRGB.bmp")
+    data = plt.imread("../test_image/PeppersRGB.bmp")
     data_com = c420(data)
     np.save('../buffer/Peppers.csv', data_com)
