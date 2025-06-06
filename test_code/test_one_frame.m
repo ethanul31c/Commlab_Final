@@ -1,8 +1,7 @@
-function test_one_frame()
-    
-    clc; clear; close all;
-    
-    addpath('utility80211a\');
+% function wifi_802_11_a()
+function test_one_frame(filename)
+    USRP_ENABLE = 0;
+    % clc; clear; close all;
     
     global pilot_idx;
     global data_idx;
@@ -21,20 +20,12 @@ function test_one_frame()
     fs = 10e6;   % Sampling rate (Hz)
     ts = 1/fs;   % Sampling time
     fc = 915e6;  % Carrier frequency (Hz)
-    
-    
+
     % Define subcarrier indices for 802.11a/g
     pilot_idx = [12 26 40 54];   % Pilot subcarriers (1-based index)
     data_idx = setdiff(1:N_FFT, [1:6, pilot_idx, N_FFT/2+1, 1:6, 60:64]); % Exclude DC, pilot, and unused guard bands
     zero_idx = [1:6, N_FFT/2+1, 60:64];
-    % 5- OFDM symbols with STS, LTS;
-    L_sig_5_head = 320;
-    L_sig_5 =  L_sig_5_head + 5 * (N_OFDM);
-    L_sig_100   = L_sig_5_head + 100 * (N_OFDM);
-    
-    % scaling of transmitted amplitude
-    send_amp = 0.1;
-    
+
     % color style
     % '#003C76': Deep Blue
     % '#939880': Tea Green
@@ -43,88 +34,145 @@ function test_one_frame()
     % '#99755A': Brown
     % '#393939': Black
     
+    %% load function kits and bitstream
+    addpath('utility80211a\');
+    file_str = sprintf("%s.mat", filename);
+    load(file_str);
+
+    %% generate sections
+
+
+    % K-OFDM
+    NUM_SYMBOLS_IN_A_FRAME = 100;  % number of ofdm symbols in each frame
+    L_head  = 320;
+    L_sig   = L_head + NUM_SYMBOLS_IN_A_FRAME * (N_OFDM);
+    % scaling of transmitted amplitude
+    send_amp = 0.1;
     
-    L_head = 320;
-    L_sig_100 = L_head + 100*N_OFDM;
+    % segmenting bitstream
     
-    sig_100 = zeros(L_sig_100, 1);
-    data_tx = zeros(5*48, 1);
+    QAM_size = 16; % 4 for 4 QAM
+    NUM_BITS_PER_SYMBOL = log2(QAM_size) * length(data_idx); % 96 for 4QAM
     
-    % generate frame head
+
+    LEN_SEC = NUM_BITS_PER_SYMBOL * NUM_SYMBOLS_IN_A_FRAME; % bits/frame, 9600 default 
+    pad_len = mod(-length(bits_tx), LEN_SEC);  % 算出還差幾個補到 M 的倍數
+    bits_tx_padded = [bits_tx, zeros(1, pad_len)];  % 補 0
+    bits_tx_matrix = reshape(bits_tx_padded, LEN_SEC, []).';  % 每 row 有 LEN_SEC 個
+    [NUM_OF_SIG_FRAME, ~] = size(bits_tx_matrix);
+    % genterating OFDM symbol
     [STS, single_STS] = STS_generate();
     [LTS, single_LTS] = LTS_generate();
-    sig_100(1:length(STS)) = STS;
-    sig_100(length(STS)+1:length(STS)+length(LTS))= LTS;
+
+    sig_tx = zeros(NUM_OF_SIG_FRAME, L_sig);
+
+    for i = 0:(NUM_OF_SIG_FRAME-1)
+        sig_frame = zeros(L_sig, 1);
+        sig_frame(1:length(STS)) = STS;
+        sig_frame(length(STS)+1:length(STS)+length(LTS))= LTS;
+
+            % generate OFDM Symbols in one frame
+            for j = 0:(NUM_SYMBOLS_IN_A_FRAME-1)
+                x_fft = ofdm_generate(QAM_size, bits_tx_matrix(i+1, j*NUM_BITS_PER_SYMBOL+1 : (j+1)*NUM_BITS_PER_SYMBOL)); % one OFDM symbol, 4-qam
+                x = ifft(ifftshift(x_fft));
+                x_cp = ofdm_addCP(x);
+                sig_frame(L_head + j*(N_OFDM)+1 : L_head+(j+1)*(N_OFDM)) = x_cp;
+                
+                % data_tx(48*i+1 : 48*(i+1)) = x(data_idx);
+            end
+
+            sig_tx(i+1, :) = sig_frame;
+    end
+
     
-    % generate 100 OFDM Symbols
-    for i = 0:(100-1)
-        x_fft = ofdm_generate(4); % one OFDM symbol, 4-qam
-        x = ifft(ifftshift(x_fft));
-        x_cp = ofdm_addCP(x);
-        sig_100(L_head + i*(N_OFDM)+1 : L_head+(i+1)*(N_OFDM)) = x_cp;
+    
+    
+    % bits_tx = qamdemod(data_tx, 16, 'gray', OutputType='bit', UnitAveragePower=true);
+    
+    %% MAIN CODE of Transmiting Signal with USRP
+
+    pad_length       = 100; % in both front and end
+    CONST_OF_DELAY   = 20000;
+    
+    LENGTH_OF_FRAME  = L_sig + 2*pad_length; % frame - length
+    FRAME_DELAY      = ceil(CONST_OF_DELAY / LENGTH_OF_FRAME);
+
+
+    NUM_OF_SIG_FRAME
+    NUM_OF_TX_FRAME  = FRAME_DELAY+NUM_OF_SIG_FRAME;
+    NUM_OF_RX_FRAME  = NUM_OF_TX_FRAME + 3;
+   
+    if USRP_ENABLE == 1
+        fprintf("--------TX--------\n", FRAME_DELAY);
+        fprintf("TX %d frames in total:");
+        fprintf("|1---Delay---%d|-|%d---Signal---%d|\n", FRAME_DELAY...
+        ,FRAME_DELAY+1 ,FRAME_DELAY+NUM_OF_SIG_FRAME);
         
-        data_tx(48*i+1 : 48*(i+1)) = x(data_idx);
-    end
-    sig_100(L_head+1:end) = sig_100(L_head+1:end)/mean(abs(sig_100(L_head+1:end)));
-    
-    bits_tx = qamdemod(data_tx, 4, 'gray', OutputType='bit', UnitAveragePower=true);
-    padded_sig_100 = send_amp*[zeros(100, 1); sig_100; zeros(100, 1)];
+        fprintf("--------RX--------\n", FRAME_DELAY);
+        fprintf("RX %d frames in total\n", NUM_OF_RX_FRAME);
+        fprintf("please wait %d seconds\n", NUM_OF_RX_FRAME*ts*LENGTH_OF_FRAME);
     
     
-    l = length(padded_sig_100);
-    radio_Tx = USRP_init(l, '192.168.10.2', "tx");
-    radio_Rx = USRP_init(l, '192.168.10.2', "rx");
-    buffer = zeros(5*l, 1);
     
-    % Transmit the frame we generate
-    
-    for ii = 1:3
-        if ii == 2
-            tunderrun = radio_Tx(padded_sig_100);
-        else
-            tunderrun = radio_Tx(complex(zeros(l, 1)));
+        radio_Tx = USRP_init(LENGTH_OF_FRAME, '192.168.10.2', "tx");
+        radio_Rx = USRP_init(LENGTH_OF_FRAME, '192.168.10.2', "rx");
+        buffer = zeros(NUM_OF_RX_FRAME*LENGTH_OF_FRAME, 1);
+        
+        % Transmit the frame we generate
+        for ii = 1:NUM_OF_TX_FRAME
+            
+            % size(padded_sig) = 8520*1
+            
+            if ii >= FRAME_DELAY+1 && ii <= FRAME_DELAY+NUM_OF_SIG_FRAME
+                padded_sig = send_amp*[zeros(pad_length, 1); sig_tx(ii-FRAME_DELAY, :).'; zeros(pad_length, 1)];
+                tunderrun = radio_Tx(padded_sig);
+            else
+                tunderrun = radio_Tx(complex(zeros(LENGTH_OF_FRAME, 1)));
+            end
+            [rcvdSignal, ~, toverflow] = step(radio_Rx);
+            buffer((1+(ii-1)*LENGTH_OF_FRAME):(ii*LENGTH_OF_FRAME)) = rcvdSignal;
         end
-        [rcvdSignal, ~, toverflow] = step(radio_Rx);
-        buffer((1+(ii-1)*l):(ii*l)) = rcvdSignal;
+        % Keep reception for 2 frames
+        for ii = NUM_OF_TX_FRAME + 1 : NUM_OF_RX_FRAME
+            [rcvdSignal, ~, toverflow] = step(radio_Rx);
+            buffer((1+(ii-1)*LENGTH_OF_FRAME):(ii*LENGTH_OF_FRAME)) = rcvdSignal;
+        end 
+        
+        release(radio_Tx)
+        release(radio_Rx)
+        single_LTS = LTS(end-64+1:end);
+        [sts_start, frame_starts, ofdm_start] = find_starts(buffer, 1, single_LTS);
+        fprintf("ofdm_start = %d\n" ,ofdm_start);
+        save('received_test.mat',"sts_start", "frame_starts", "ofdm_start", "single_STS", "single_LTS", "buffer");
+    else
+        load ("received_test.mat")
     end
-    % Keep reception for 2 frames
-    for ii = 4:5
-        [rcvdSignal, ~, toverflow] = step(radio_Rx);
-        buffer((1+(ii-1)*l):(ii*l)) = rcvdSignal;
-    end 
-    
-    release(radio_Tx)
-    release(radio_Rx)
-    
-    
-    [sec_beg, sec_end] = fast_trim(buffer, 8500, 100);
-    received_buffer = buffer(sec_beg:sec_end);
+    % [sec_beg, sec_end] = fast_trim(buffer, 8500, 100);
+    % received_buffer = buffer(sec_beg:sec_end);
     
 
-    single_LTS = LTS(end-64+1:end);
-    [sts_start, lts_start, ofdm_start] = find_starts(buffer(sec_beg:sec_end), sec_beg, single_LTS);
-    fprintf("ofdm_start = %d" ,ofdm_start);
-
-    save('received_test.mat',"sts_start", "lts_start", "ofdm_start" ,"sig_100", "bits_tx", "single_STS", "single_LTS", "sec_beg" , "sec_end", "received_buffer");
 
 
-    % plot the location of estimated starts
-    figure;
-    time_vector = (sec_beg:sec_end);
-    plot(time_vector, real(buffer(sec_beg:sec_end)), 'Color', '#003C76');
-    hold on
-    xline(sts_start, 'Color', '#393939','LineWidth', 1);
-    xline(lts_start, 'Color', '#939880','LineWidth', 1);
-    xline(ofdm_start, 'Color', '#875B75','LineWidth', 1);
-    xline(sts_start + L_sig_100, 'Color', '#DAC1AE','LineWidth', 1);
-    hold off
-    xlim([sec_beg sec_end]);
-    xt = xticks;
-    xticklabels(xt * ts*1e6);
-    xlabel('Time (microseconds)');
-    ylabel('Amplitude');
-    title('Time-Domain received signal (real)');
-    legend('received signal','sts\_start', 'lts\_start', 'ofdm\_start', 'frame\_end');
+
+    % % plot the location of estimated starts
+    % figure;
+    % time_vector = (sec_beg:sec_end);
+    % plot(time_vector, real(buffer(sec_beg:sec_end)), 'Color', '#003C76');
+    % hold on
+    % xline(sts_start, 'Color', '#393939','LineWidth', 1);
+    % xline(lts_start, 'Color', '#939880','LineWidth', 1);
+    % xline(ofdm_start, 'Color', '#875B75','LineWidth', 1);
+    % xline(sts_start + L_sig_100, 'Color', '#DAC1AE','LineWidth', 1);
+    % hold off
+    % xlim([sec_beg sec_end]);
+    % xt = xticks;
+    % xticklabels(xt * ts*1e6);
+    % xlabel('Time (microseconds)');
+    % ylabel('Amplitude');
+    % title('Time-Domain received signal (real)');
+    % legend('received signal','sts\_start', 'lts\_start', 'ofdm\_start', 'frame\_end');
 
 end
+
+% test_one("Peppers_bit")
 
