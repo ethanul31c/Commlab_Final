@@ -1,6 +1,7 @@
 % function wifi_802_11_a()
 function test_one_frame(filename)
-    USRP_ENABLE = 0;
+    
+    USRP_ENABLE = 0; % send and save signal when == 1
     % clc; clear; close all;
     
     global pilot_idx;
@@ -51,7 +52,7 @@ function test_one_frame(filename)
     
     % segmenting bitstream
     
-    QAM_size = 16; % 4 for 4 QAM
+    QAM_size = 64; % 4 for 4 QAM
     NUM_BITS_PER_SYMBOL = log2(QAM_size) * length(data_idx); % 96 for 4QAM
     
 
@@ -87,7 +88,6 @@ function test_one_frame(filename)
     
     
     
-    % bits_tx = qamdemod(data_tx, 16, 'gray', OutputType='bit', UnitAveragePower=true);
     
     %% MAIN CODE of Transmiting Signal with USRP
 

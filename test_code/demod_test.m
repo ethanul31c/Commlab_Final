@@ -46,11 +46,11 @@ function demod_test()
     L_head  = 320;
     L_sig   = L_head + NUM_SYMBOLS_IN_A_FRAME * (N_OFDM);
     % scaling of transmitted amplitude
-    send_amp = 0.1;
+    % send_amp = 0.1;
     
     % segmenting bitstream
     
-    QAM_size = 16; % 4 for 4 QAM
+    QAM_size = 64; % 4 for 4 QAM
     NUM_BITS_PER_SYMBOL = log2(QAM_size) * length(data_idx); % 96 for 4QAM
     
     
@@ -126,52 +126,55 @@ function demod_test()
             Pilot_rx(4*ii+1 : 4*(ii+1)) = Pilot;
         end
     
-        Data_rx = Data_rx / mean(abs(Data_rx));
-        Pilot_rx = Pilot_rx / mean(abs(Pilot_rx));
-        % I_data = real(Data_rx);
-        % Q_data = imag(Data_rx);
-        % I_pilot = real(Pilot_rx);
-        % Q_pilot = imag(Pilot_rx);
-        % 
-        % % ideal symbols
-        % 
-        % ideal_symbols = qammod(0:QAM_size-1, QAM_size, 'gray', 'UnitAveragePower', true);
-        % Ii = real(ideal_symbols);
-        % Qi = imag(ideal_symbols);
-        % 
-        % % plot data and pilot
-        % close all;
-        % figure(1);
-        % plot(I_pilot, Q_pilot, 'o','Color', '#939880', 'MarkerFaceColor', 'r', 'MarkerSize', 1); 
-        % hold on;
-        % plot(I_data, Q_data, 'o', 'Color', '#875B75', 'MarkerFaceColor', 'r', 'MarkerSize', 1); 
-        % 
-        % % plot ideal symbol
-        % plot(Ii, Qi, 'x', 'Color', '#003C76', 'MarkerSize', 5, 'LineWidth', 1);
-        % I_bpsk = [1, -1];
-        % Q_bpsk = [0, 0];
-        % plot(I_bpsk, Q_bpsk, 'bx', 'MarkerSize', 5, 'LineWidth', 2); 
-        % 
-        % 
-        % axis([-1.5 1.5 -1.5 1.5]);
-        % xlabel('I(t)');
-        % ylabel('Q(t)');
-        % 
-        % xline(0, 'k', 'LineWidth', 1); % Real axis (vertical)
-        % yline(0, 'k', 'LineWidth', 1); % Imaginary axis (horizontal)
-        % legend({'received pilots', 'received data', 'ideal modulation'}, 'Location', 'northeast');
-        % title('8. Received Constellation with CFO corrected');
-        % 
-        % axis equal;
-        % grid on;
-        % hold off;
+        Data_rx = Data_rx / sqrt(mean(abs(Data_rx).^2));
+        
+        Pilot_rx = Pilot_rx / sqrt(mean(abs(Pilot_rx).^2));
+
+        if i == NUM_OF_SIG_FRAME-1
+            
+            I_data = real(Data_rx);
+            Q_data = imag(Data_rx);
+            I_pilot = real(Pilot_rx);
+            Q_pilot = imag(Pilot_rx);
+    
+            % ideal symbols
+            ideal_symbols = qammod(0:QAM_size-1, QAM_size, 'gray', 'UnitAveragePower', true);
+            Ii = real(ideal_symbols);
+            Qi = imag(ideal_symbols);
+    
+            % plot data and pilot
+            close all;
+            figure(1);
+            plot(I_pilot, Q_pilot, 'o','Color', '#939880', 'MarkerFaceColor', 'r', 'MarkerSize', 1); 
+            hold on;
+            plot(I_data, Q_data, 'o', 'Color', '#875B75', 'MarkerFaceColor', 'r', 'MarkerSize', 1); 
+    
+            % plot ideal symbol
+            plot(Ii, Qi, 'x', 'Color', '#003C76', 'MarkerSize', 5, 'LineWidth', 1);
+            I_bpsk = [1, -1];
+            Q_bpsk = [0, 0];
+            plot(I_bpsk, Q_bpsk, 'bx', 'MarkerSize', 5, 'LineWidth', 2); 
+    
+    
+            axis([-1.5 1.5 -1.5 1.5]);
+            xlabel('I(t)');
+            ylabel('Q(t)');
+    
+            xline(0, 'k', 'LineWidth', 1); % Real axis (vertical)
+            yline(0, 'k', 'LineWidth', 1); % Imaginary axis (horizontal)
+            legend({'received pilots', 'received data', 'ideal modulation'}, 'Location', 'northeast');
+            title('8. Received Constellation with CFO corrected');
+    
+            axis equal;
+            grid on;
+            hold off;
+        end
     
         %% demodulation
     
         data_rx_bits = qamdemod(Data_rx, QAM_size, 'gray', 'UnitAveragePower', true, OutputType="bit");
         bits_rx(1+(i-1)*length(data_rx_bits) : i*length(data_rx_bits)) = data_rx_bits;
     end
-    
     
     
     numErrors = sum(bits_tx~=bits_rx(1:length(bits_tx)));
@@ -182,3 +185,5 @@ function demod_test()
     fprintf("BER = %.2f\n", BER);
 
 end
+
+%demod_tes()

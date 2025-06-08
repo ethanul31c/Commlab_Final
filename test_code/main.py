@@ -22,7 +22,7 @@ def main():
 
     input("請按 Enter 結束...")
 
-
+# Data Flow: npy -> .mat ---Channel---> .mat ------> .npy
 
 def receive_image(filename):
     sess.demod_test(nargout=0)
