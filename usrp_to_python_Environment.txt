@@ -1,0 +1,14 @@
+1. 安裝venv並啟動:
+	py -3.9 -m venv .venv
+	.venv/Script/activate
+(或conda)
+
+2. 下載套件:
+	pip install scipy numpy setuptools
+
+3. 下載 MATLAB Engine API for Python
+	cd path/to/matlab/extern/engines/python
+	python setup.py install
+
+
+

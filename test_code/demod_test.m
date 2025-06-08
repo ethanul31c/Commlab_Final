@@ -1,4 +1,4 @@
-function demod_test()
+function demod_test(QAM_size_int)
     % clc; clear; close all;
     
     global pilot_idx;
@@ -33,7 +33,7 @@ function demod_test()
     % '#393939': Black
     
     %% load function kits and bitstream
-    filename = "Peppers_bit"
+    filename = "Peppers_bit";
     addpath('utility80211a\');
     file_str = sprintf("%s.mat", filename);
     load(file_str);
@@ -50,7 +50,8 @@ function demod_test()
     
     % segmenting bitstream
     
-    QAM_size = 64; % 4 for 4 QAM
+    % QAM_size = 64; % 4 for 4 QAM
+		QAM_size = double(QAM_size_int);
     NUM_BITS_PER_SYMBOL = log2(QAM_size) * length(data_idx); % 96 for 4QAM
     
     
@@ -73,7 +74,7 @@ function demod_test()
     FRAME_DELAY      = ceil(CONST_OF_DELAY / LENGTH_OF_FRAME);
     
     
-    NUM_OF_SIG_FRAME
+    NUM_OF_SIG_FRAME;
     NUM_OF_TX_FRAME  = FRAME_DELAY+NUM_OF_SIG_FRAME;
     NUM_OF_RX_FRAME  = NUM_OF_TX_FRAME + 3;
     

@@ -1,8 +1,9 @@
 % function wifi_802_11_a()
-function test_one_frame(filename)
+function test_one_frame(filename, useUSRP, QAM_size_int, antennaMode)
     
-    USRP_ENABLE = 0; % send and save signal when == 1
+    USRP_ENABLE = useUSRP; % send and save signal when == 1
     % clc; clear; close all;
+		QAM_size = double(QAM_size_int);
     
     global pilot_idx;
     global data_idx;
@@ -52,7 +53,7 @@ function test_one_frame(filename)
     
     % segmenting bitstream
     
-    QAM_size = 64; % 4 for 4 QAM
+    % QAM_size = 64; % 4 for 4 QAM
     NUM_BITS_PER_SYMBOL = log2(QAM_size) * length(data_idx); % 96 for 4QAM
     
 
@@ -98,19 +99,20 @@ function test_one_frame(filename)
     FRAME_DELAY      = ceil(CONST_OF_DELAY / LENGTH_OF_FRAME);
 
 
-    NUM_OF_SIG_FRAME
+    NUM_OF_SIG_FRAME;
     NUM_OF_TX_FRAME  = FRAME_DELAY+NUM_OF_SIG_FRAME;
     NUM_OF_RX_FRAME  = NUM_OF_TX_FRAME + 3;
    
     if USRP_ENABLE == 1
-        fprintf("--------TX--------\n", FRAME_DELAY);
+        fprintf("------------- TX -------------\n", FRAME_DELAY);
         fprintf("TX %d frames in total:");
         fprintf("|1---Delay---%d|-|%d---Signal---%d|\n", FRAME_DELAY...
         ,FRAME_DELAY+1 ,FRAME_DELAY+NUM_OF_SIG_FRAME);
         
-        fprintf("--------RX--------\n", FRAME_DELAY);
+        fprintf("------------- RX -------------\n", FRAME_DELAY);
         fprintf("RX %d frames in total\n", NUM_OF_RX_FRAME);
         fprintf("please wait %d seconds\n", NUM_OF_RX_FRAME*ts*LENGTH_OF_FRAME);
+        fprintf("------------------------------\n");
     
     
     
