@@ -1,5 +1,5 @@
 % function wifi_802_11_a()
-function test_one_frame(filename, useUSRP, QAM_size_int, antennaMode)
+function test_one_frame(filename, useUSRP, QAM_size_int, USRP_MODE)
     
     USRP_ENABLE = useUSRP; % send and save signal when == 1
     % clc; clear; close all;
@@ -86,6 +86,10 @@ function test_one_frame(filename, useUSRP, QAM_size_int, antennaMode)
             sig_tx(i+1, :) = sig_frame;
     end
 
+		fprintf("average STS power: %f\n", mean(abs(STS)));
+		fprintf("average LTS power: %f\n", mean(abs(LTS)));
+		fprintf("average TX sig power: %f\n", mean(abs(sig_tx(:))));
+
     
     
     
@@ -116,8 +120,16 @@ function test_one_frame(filename, useUSRP, QAM_size_int, antennaMode)
     
     
     
-        radio_Tx = USRP_init(LENGTH_OF_FRAME, '192.168.10.2', "tx");
-        radio_Rx = USRP_init(LENGTH_OF_FRAME, '192.168.10.2', "rx");
+				if USRP_MODE == 1
+					radio_Tx = USRP_init(LENGTH_OF_FRAME, '192.168.10.2', "tx");
+					radio_Rx = USRP_init(LENGTH_OF_FRAME, '192.168.10.2', "rx");
+					fprintf("Sending with one usrp...\n");
+				end
+				if USRP_MODE == 2
+					radio_Tx = USRP_init(LENGTH_OF_FRAME, '192.168.10.2', "tx");
+					radio_Rx = USRP_init(LENGTH_OF_FRAME, '192.168.20.2', "rx");
+					fprintf("Sending with two usrps...\n");
+				end
         buffer = zeros(NUM_OF_RX_FRAME*LENGTH_OF_FRAME, 1);
         
         % Transmit the frame we generate

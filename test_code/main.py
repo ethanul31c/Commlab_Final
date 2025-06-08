@@ -6,7 +6,8 @@ import sys
 import os
 
 USE_USRP = 1
-QAM_SIZE = 64
+QAM_SIZE = 256
+ANTENNA_MODE = 2
 
 try:
     sess = matlab.engine.start_matlab("")
@@ -41,7 +42,7 @@ def send_image(filename):
     data = np.load(f'../buffer/{filename}.npy') 
     mat_data = {'bits_tx': data}
     savemat(f'{filename}.mat', mat_data)
-    sess.test_one_frame(filename, USE_USRP, QAM_SIZE, nargout=0)
+    sess.test_one_frame(filename, USE_USRP, QAM_SIZE, ANTENNA_MODE, nargout=0)
 
 
 def plot_whole_buffer():
