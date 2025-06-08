@@ -17,4 +17,4 @@ def c420(img):
 if __name__ == "__main__":
     data = plt.imread("../test_image/PeppersRGB.bmp")
     data_com = c420(data)
-    np.save('../buffer/Peppers.npy', data_com)
+    np.save('../buffer/Peppers_com.npy', data_com)
