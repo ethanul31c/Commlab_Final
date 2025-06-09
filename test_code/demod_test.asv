@@ -79,9 +79,7 @@ function demod_test(filename, QAM_size_int)
     NUM_OF_RX_FRAME  = NUM_OF_TX_FRAME + 3;
     
     buffer = 0; % 占掉名稱
-    %load ("received_test.mat")
-    savename = fprintf("%s_channel_%dQAM.mat",filename, QAM_size_int)
-    load (savename);
+    load ("received_test.mat")
     % plot_whole_buffer();
     
     bits_rx = zeros('logical');
@@ -133,7 +131,7 @@ function demod_test(filename, QAM_size_int)
         
         Pilot_rx = Pilot_rx / sqrt(mean(abs(Pilot_rx).^2));
 
-        if i == NUM_OF_SIG_FRAME%-1
+        if i == NUM_OF_SIG_FRAME-1
             
             I_data = real(Data_rx);
             Q_data = imag(Data_rx);
@@ -185,7 +183,7 @@ function demod_test(filename, QAM_size_int)
     
     file_str = sprintf("%s_received.mat", filename);
     save(file_str, "bits_rx")
-    fprintf("BER = %.5f\n", BER);
+    fprintf("BER = %.2f\n", BER);
 
 end
 
