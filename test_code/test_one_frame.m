@@ -157,7 +157,8 @@ function test_one_frame(filename, useUSRP, QAM_size_int, USRP_MODE)
         single_LTS = LTS(end-64+1:end);
         [sts_start, frame_starts, ofdm_start] = find_starts(buffer, 1, single_LTS);
         fprintf("ofdm_start = %d\n" ,ofdm_start);
-        save('received_test.mat',"sts_start", "frame_starts", "ofdm_start", "single_STS", "single_LTS", "buffer");
+        savename = fprintf("%s_channel_%dQAM.mat",filename, QAM_size_int);
+        save(savename, "sts_start", "frame_starts", "ofdm_start", "single_STS", "single_LTS", "buffer");
     else
         load ("received_test.mat")
     end

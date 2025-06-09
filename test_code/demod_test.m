@@ -79,7 +79,9 @@ function demod_test(QAM_size_int)
     NUM_OF_RX_FRAME  = NUM_OF_TX_FRAME + 3;
     
     buffer = 0; % 占掉名稱
-    load ("received_test.mat")
+    %load ("received_test.mat")
+    savename = fprintf("%s_channel_%dQAM.mat",filename, QAM_size_int)
+    load (savename);
     % plot_whole_buffer();
     
     bits_rx = zeros('logical');
