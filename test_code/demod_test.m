@@ -185,7 +185,7 @@ function demod_test(QAM_size_int)
     
     file_str = sprintf("%s_received.mat", filename);
     save(file_str, "bits_rx")
-    fprintf("BER = %.2f\n", BER);
+    fprintf("BER = %.5f\n", BER);
 
 end
 
