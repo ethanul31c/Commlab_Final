@@ -5,12 +5,15 @@ import numpy as np
 import sys
 import os
 import matplotlib.pyplot as plt
+sys.path.append("./image")
 from image import c420, c420_decom, bit_generator, image_generator
+from PIL import Image
 
 USE_USRP = 1
-QAM_SIZE = 256
-ANTENNA_MODE =2
-AMP = 0.2
+QAM_SIZE = 4
+ANTENNA_MODE = 2
+AMP = 0.01
+print(f"AMP = {AMP*0.2}")
 
 try:
     sess = matlab.engine.start_matlab("")
@@ -26,13 +29,21 @@ def main():
 
     filename = "Peppers"
     raw_img = plt.imread(f"../test_image/{filename}.bmp")
+    # plt.imshow(raw_img)
+    # plt.show()
     c420.c420(raw_img, filename)
     com_img = np.load(f"../buffer/{filename}_com.npy")
     bit_generator.bit_generator(com_img, filename)
-    # send_image(filename)
-    # receive_image(filename)
+    send_image(filename)
+    receive_image(filename)
     com_img_recv = np.load(f"../buffer/{filename}_bit_received.npy")
     image_generator.image_generator(com_img_recv, com_img.shape, filename)
+
+    com_img_recv = np.load(f"../buffer/{filename}_com_received.npy")
+    c420_decom.c420_decom(com_img_recv, filename)
+    recv_img = plt.imread(f"../test_image/{filename}_decom.bmp")
+    plt.imshow(recv_img)
+    plt.show()
 
     input("請按 Enter 結束...")
 
@@ -48,7 +59,7 @@ def receive_image(filename):
     np.save(f'../buffer/{filename}_bit_received.npy', bit_stream)
 
 def send_image(filename):
-    data = np.load(f'../buffer/{filename}_com.npy') #should be bit 
+    data = np.load(f'../buffer/{filename}_bit.npy') #should be bit 
     mat_data = {'bits_tx': data}
     savemat(f'{filename}.mat', mat_data)
     sess.test_one_frame(filename, USE_USRP, QAM_SIZE, ANTENNA_MODE, AMP, nargout=0)

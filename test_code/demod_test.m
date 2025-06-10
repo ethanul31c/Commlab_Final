@@ -15,7 +15,7 @@ function demod_test(filename, QAM_size_int)
     N_FFT = 64;  % FFT size
     N_CP = 16;   % Cyclic prefix length
     N_OFDM = N_FFT+ N_CP;
-    fs = 10e6;   % Sampling rate (Hz)
+    fs = 20e6;   % Sampling rate (Hz)
     ts = 1/fs;   % Sampling time
     fc = 915e6;  % Carrier frequency (Hz)
     
@@ -80,14 +80,24 @@ function demod_test(filename, QAM_size_int)
     
     buffer = 0; % 占掉名稱
     %load ("received_test.mat")
-    savename = fprintf("%s_channel_%dQAM.mat",filename, QAM_size_int)
+    savename = sprintf("%s_channel_%dQAM.mat",filename, QAM_size_int);
     load (savename);
     % plot_whole_buffer();
     
     bits_rx = zeros('logical');
+    SNR = 0;
     
     for i = 1: NUM_OF_SIG_FRAME
-    
+        %% P_sig (for SNR calculation)
+        ofdm_start = frame_starts(i) + 128;
+        P_sig = mean(abs(buffer(ofdm_start:ofdm_start+NUM_SYMBOLS_IN_A_FRAME*(N_FFT+N_CP)-1)).^2);
+        P_noise = mean(abs([ ...
+            buffer((frame_starts(i)-100):(frame_starts(i)-1));...
+            buffer((ofdm_start+NUM_SYMBOLS_IN_A_FRAME*(N_FFT+N_CP)):...
+            (ofdm_start+NUM_SYMBOLS_IN_A_FRAME*(N_FFT+N_CP)))]).^2);
+        SNR = SNR + P_sig/P_noise;
+
+
         %% CFO correction
         symbol_start= frame_starts(i) + 128;
         lts_start_1 = frame_starts(i);
@@ -133,7 +143,7 @@ function demod_test(filename, QAM_size_int)
         
         Pilot_rx = Pilot_rx / sqrt(mean(abs(Pilot_rx).^2));
 
-        if i == NUM_OF_SIG_FRAME%-1
+        if i == NUM_OF_SIG_FRAME-1
             
             I_data = real(Data_rx);
             Q_data = imag(Data_rx);
@@ -179,12 +189,15 @@ function demod_test(filename, QAM_size_int)
         bits_rx(1+(i-1)*length(data_rx_bits) : i*length(data_rx_bits)) = data_rx_bits;
     end
     
+    SNR = SNR / NUM_OF_SIG_FRAME;
+    SNR_dB = 10*log(SNR);
     
     numErrors = sum(bits_tx~=bits_rx(1:length(bits_tx)));
     BER = (numErrors/length(bits_rx));
     
     file_str = sprintf("%s_received.mat", filename);
     save(file_str, "bits_rx")
+    fprintf("SNR = %.5f dB\n", SNR_dB);
     fprintf("BER = %.5f\n", BER);
 
 end

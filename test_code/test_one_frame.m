@@ -3,7 +3,7 @@ function test_one_frame(filename, useUSRP, QAM_size_int, USRP_MODE, send_amp)
     
     USRP_ENABLE = useUSRP; % send and save signal when == 1
     % clc; clear; close all;
-		QAM_size = double(QAM_size_int);
+	QAM_size = double(QAM_size_int);
     
     global pilot_idx;
     global data_idx;
@@ -19,7 +19,7 @@ function test_one_frame(filename, useUSRP, QAM_size_int, USRP_MODE, send_amp)
     N_FFT = 64;  % FFT size
     N_CP = 16;   % Cyclic prefix length
     N_OFDM = N_FFT+ N_CP;
-    fs = 10e6;   % Sampling rate (Hz)
+    fs = 20e6;   % Sampling rate (Hz)
     ts = 1/fs;   % Sampling time
     fc = 915e6;  % Carrier frequency (Hz)
 
@@ -49,7 +49,7 @@ function test_one_frame(filename, useUSRP, QAM_size_int, USRP_MODE, send_amp)
     L_head  = 320;
     L_sig   = L_head + NUM_SYMBOLS_IN_A_FRAME * (N_OFDM);
     % scaling of transmitted amplitude
-    % send_amp = 0.1;
+    send_amp_all = 0.2;
     
     % segmenting bitstream
     
@@ -78,7 +78,7 @@ function test_one_frame(filename, useUSRP, QAM_size_int, USRP_MODE, send_amp)
                 x_fft = ofdm_generate(QAM_size, bits_tx_matrix(i+1, j*NUM_BITS_PER_SYMBOL+1 : (j+1)*NUM_BITS_PER_SYMBOL)); % one OFDM symbol, 4-qam
                 x = ifft(ifftshift(x_fft)) * sqrt(length(x_fft));
                 x_cp = ofdm_addCP(x);
-                sig_frame(L_head + j*(N_OFDM)+1 : L_head+(j+1)*(N_OFDM)) = x_cp;
+                sig_frame(L_head + j*(N_OFDM)+1 : L_head+(j+1)*(N_OFDM)) = send_amp * x_cp;
                 
                 % data_tx(48*i+1 : 48*(i+1)) = x(data_idx);
             end
@@ -134,7 +134,7 @@ function test_one_frame(filename, useUSRP, QAM_size_int, USRP_MODE, send_amp)
             % size(padded_sig) = 8520*1
             
             if ii >= FRAME_DELAY+1 && ii <= FRAME_DELAY+NUM_OF_SIG_FRAME
-                padded_sig = send_amp*[zeros(pad_length, 1); sig_tx(ii-FRAME_DELAY, :).'; zeros(pad_length, 1)];
+                padded_sig = send_amp_all*[zeros(pad_length, 1); sig_tx(ii-FRAME_DELAY, :).'; zeros(pad_length, 1)];
                 tunderrun = radio_Tx(padded_sig);
             else
                 tunderrun = radio_Tx(complex(zeros(LENGTH_OF_FRAME, 1)));
@@ -153,7 +153,7 @@ function test_one_frame(filename, useUSRP, QAM_size_int, USRP_MODE, send_amp)
         single_LTS = LTS(end-64+1:end);
         [sts_start, frame_starts, ofdm_start] = find_starts(buffer, 1, single_LTS);
         fprintf("ofdm_start = %d\n" ,ofdm_start);
-        savename = fprintf("%s_channel_%dQAM.mat",filename, QAM_size_int);
+        savename = sprintf("%s_channel_%dQAM.mat",filename, QAM_size_int);
         save(savename, "sts_start", "frame_starts", "ofdm_start", "single_STS", "single_LTS", "buffer");
     else
         load ("received_test.mat")
