@@ -1,7 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from .c422 import H
 import cv2 
+
+H = np.array([[0.299, 0.587, 0.114],
+       [-0.169, -0.331, 0.500],
+       [0.500, -0.419, -0.081]])
+
 def c420_decom(img_ycbcr_com):
   Hp = np.linalg.inv(H)
   img_ycbcr_com_rgb = np.zeros(img_ycbcr_com.shape, dtype=np.float32)

@@ -7,6 +7,6 @@ def bit_generator(a, filename):
   np.save(os.path.join(os.path.dirname(__file__), f'../../buffer/{filename}_bit.npy'), b)
 
 if __name__ == "__main__":
-  a = np.load("./buffer/Peppers_com.npy")
+  a = np.load("../../buffer/Peppers_com.npy")
   bit_generator(a, "Peppers"+"_com")
   

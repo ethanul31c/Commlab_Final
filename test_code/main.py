@@ -31,8 +31,10 @@ def main():
     bit_generator.bit_generator(com_img, filename)
     # send_image(filename)
     # receive_image(filename)
-    com_img_recv = np.load(f"../buffer/{filename}_bit_received.npy")
-    image_generator.image_generator(com_img_recv, com_img.shape, filename)
+    bit_img_recv = np.load(f"../buffer/{filename}_bit_received.npy")
+    image_generator.image_generator(bit_img_recv, com_img.shape, filename)
+    com_img_recv = np.load(f"../buffer/{filename}_com_received.npy")
+    c420_decom.c420_decom(com_img_recv, filename)
 
     input("請按 Enter 結束...")
 
