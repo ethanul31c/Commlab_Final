@@ -11,7 +11,7 @@ def c420(img):
   for i in range(img.shape[0]):
      for j in range(img.shape[1]):
         img_ycbcr[i][j] = np.reshape(H@np.reshape(img[i][j], (3, 1)), (1,3))
-  img_ycbcr_com = img_ycbcr[0:-1:2, 0:-1:2, :]
+  img_ycbcr_com = img_ycbcr[:, 0:-1:2, :]
   return img_ycbcr_com
 
 if __name__ == "__main__":

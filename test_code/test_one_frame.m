@@ -1,5 +1,5 @@
 % function wifi_802_11_a()
-function test_one_frame(filename, useUSRP, QAM_size_int, USRP_MODE)
+function test_one_frame(filename, useUSRP, QAM_size_int, USRP_MODE, send_amp)
     
     USRP_ENABLE = useUSRP; % send and save signal when == 1
     % clc; clear; close all;
@@ -49,7 +49,7 @@ function test_one_frame(filename, useUSRP, QAM_size_int, USRP_MODE)
     L_head  = 320;
     L_sig   = L_head + NUM_SYMBOLS_IN_A_FRAME * (N_OFDM);
     % scaling of transmitted amplitude
-    send_amp = 0.1;
+    % send_amp = 0.1;
     
     % segmenting bitstream
     
@@ -76,7 +76,7 @@ function test_one_frame(filename, useUSRP, QAM_size_int, USRP_MODE)
             % generate OFDM Symbols in one frame
             for j = 0:(NUM_SYMBOLS_IN_A_FRAME-1)
                 x_fft = ofdm_generate(QAM_size, bits_tx_matrix(i+1, j*NUM_BITS_PER_SYMBOL+1 : (j+1)*NUM_BITS_PER_SYMBOL)); % one OFDM symbol, 4-qam
-                x = ifft(ifftshift(x_fft));
+                x = ifft(ifftshift(x_fft)) * sqrt(length(x_fft));
                 x_cp = ofdm_addCP(x);
                 sig_frame(L_head + j*(N_OFDM)+1 : L_head+(j+1)*(N_OFDM)) = x_cp;
                 
@@ -85,10 +85,6 @@ function test_one_frame(filename, useUSRP, QAM_size_int, USRP_MODE)
 
             sig_tx(i+1, :) = sig_frame;
     end
-
-		fprintf("average STS power: %f\n", mean(abs(STS)));
-		fprintf("average LTS power: %f\n", mean(abs(LTS)));
-		fprintf("average TX sig power: %f\n", mean(abs(sig_tx(:))));
 
     
     

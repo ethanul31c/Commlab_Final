@@ -14,9 +14,11 @@ function ofdm_SYM = ofdm_generate(mod_size, data_bits)
     bit_groups  = reshape(data_bits, log2(mod_size), []).';
     sym_indices = bi2de(bit_groups, 'left-msb');  % MSB first
     qam_mod     = qammod(sym_indices, mod_size, 'UnitAveragePower', true);
+    % fprintf("fft mean = %f\n", mean(abs(qam_mod(:))));
 
     % Create OFDM symbol in frequency domain
     ofdm_SYM            = zeros(N_FFT, 1);
     ofdm_SYM(data_idx)  = qam_mod;  % Assign QAM data
     ofdm_SYM(pilot_idx) = X_pilot; % Assign BPSK pilot tones
+    % fprintf("sym mean = %f\n", mean(abs(ofdm_SYM(:))));
 end
