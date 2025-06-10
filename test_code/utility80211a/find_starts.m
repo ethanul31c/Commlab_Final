@@ -10,7 +10,7 @@ function [sts_start, frame_starts, ofdm_start] = find_starts(buffer_trimmed, sec
 
     frame_starts = lts_peaks(idx.*2-1);
     %lts_start = sec_beg + lts_peaks(1)-1;
-    
+
     sts_start = sec_beg + lts_peaks(1)-1 - 32 - 160;
     ofdm_start = sts_start + 360;
 end
