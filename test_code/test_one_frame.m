@@ -3,7 +3,7 @@ function test_one_frame(filename, useUSRP, QAM_size_int, USRP_MODE, send_amp)
     
     USRP_ENABLE = useUSRP; % send and save signal when == 1
     % clc; clear; close all;
-		QAM_size = double(QAM_size_int);
+	QAM_size = double(QAM_size_int);
     
     global pilot_idx;
     global data_idx;
