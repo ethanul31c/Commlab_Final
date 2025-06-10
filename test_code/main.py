@@ -4,6 +4,8 @@ from scipy.io import loadmat
 import numpy as np
 import sys
 import os
+import matplotlib.pyplot as plt
+from image import c420, c420_decom, bit_generator, image_generator
 
 USE_USRP = 1
 QAM_SIZE = 256
@@ -22,9 +24,15 @@ sess.cd(os.getcwd())
 
 def main():
 
-    filename = "Peppers_bit"
-    send_image(filename)
-    receive_image(filename)
+    filename = "Peppers"
+    raw_img = plt.imread(f"../test_image/{filename}.bmp")
+    c420.c420(raw_img, filename)
+    com_img = np.load(f"../buffer/{filename}_com.npy")
+    bit_generator.bit_generator(com_img, filename)
+    # send_image(filename)
+    # receive_image(filename)
+    com_img_recv = np.load(f"../buffer/{filename}_bit_received.npy")
+    image_generator.image_generator(com_img_recv, com_img.shape, filename)
 
     input("請按 Enter 結束...")
 
@@ -37,10 +45,10 @@ def receive_image(filename):
 
     bit_stream = mat_data['bits_rx']
     bit_stream = bit_stream.flatten()
-    np.save(f'../buffer/{filename}_received.npy', bit_stream)
+    np.save(f'../buffer/{filename}_bit_received.npy', bit_stream)
 
 def send_image(filename):
-    data = np.load(f'../buffer/{filename}.npy') 
+    data = np.load(f'../buffer/{filename}_com.npy') #should be bit 
     mat_data = {'bits_tx': data}
     savemat(f'{filename}.mat', mat_data)
     sess.test_one_frame(filename, USE_USRP, QAM_SIZE, ANTENNA_MODE, AMP, nargout=0)
