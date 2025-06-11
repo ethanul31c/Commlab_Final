@@ -1,5 +1,5 @@
 % function wifi_802_11_a()
-function test_one_frame(filename, useUSRP, QAM_size_int, USRP_MODE, send_amp)
+function test_one_frame(filename, useUSRP, QAM_size_int, USRP_MODE, data_amp, header_amp)
     
     USRP_ENABLE = useUSRP; % send and save signal when == 1
     % clc; clear; close all;
@@ -19,7 +19,7 @@ function test_one_frame(filename, useUSRP, QAM_size_int, USRP_MODE, send_amp)
     N_FFT = 64;  % FFT size
     N_CP = 16;   % Cyclic prefix length
     N_OFDM = N_FFT+ N_CP;
-    fs = 20e6;   % Sampling rate (Hz)
+    fs = 10e6;   % Sampling rate (Hz)
     ts = 1/fs;   % Sampling time
     fc = 915e6;  % Carrier frequency (Hz)
 
@@ -49,7 +49,10 @@ function test_one_frame(filename, useUSRP, QAM_size_int, USRP_MODE, send_amp)
     L_head  = 320;
     L_sig   = L_head + NUM_SYMBOLS_IN_A_FRAME * (N_OFDM);
     % scaling of transmitted amplitude
-    send_amp_all = 0.2;
+    send_amp_all = header_amp;
+    fprintf("header amp = %.5f\n", send_amp_all)
+    send_amp = data_amp / header_amp;
+    fprintf("data amp = %.5f\n", send_amp * send_amp_all)
     
     % segmenting bitstream
     
@@ -151,7 +154,7 @@ function test_one_frame(filename, useUSRP, QAM_size_int, USRP_MODE, send_amp)
         release(radio_Tx)
         release(radio_Rx)
         single_LTS = LTS(end-64+1:end);
-        [sts_start, frame_starts, ofdm_start] = find_starts(buffer, 1, single_LTS);
+        [sts_start, frame_starts, ofdm_start] = find_starts(buffer, 1, single_LTS, NUM_OF_SIG_FRAME);
         fprintf("ofdm_start = %d\n" ,ofdm_start);
         savename = sprintf("%s_channel_%dQAM.mat",filename, QAM_size_int);
         save(savename, "sts_start", "frame_starts", "ofdm_start", "single_STS", "single_LTS", "buffer");

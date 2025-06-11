@@ -15,7 +15,7 @@ function demod_test(filename, QAM_size_int)
     N_FFT = 64;  % FFT size
     N_CP = 16;   % Cyclic prefix length
     N_OFDM = N_FFT+ N_CP;
-    fs = 20e6;   % Sampling rate (Hz)
+    fs = 10e6;   % Sampling rate (Hz)
     ts = 1/fs;   % Sampling time
     fc = 915e6;  % Carrier frequency (Hz)
     
@@ -138,9 +138,17 @@ function demod_test(filename, QAM_size_int)
             Data_rx(48*ii+1 : 48*(ii+1)) = Data_res_CFO_corrected;
             Pilot_rx(4*ii+1 : 4*(ii+1)) = Pilot;
         end
-    
-        Data_rx = Data_rx / sqrt(mean(abs(Data_rx).^2));
         
+        Data_rx = Data_rx / sqrt(mean(abs(Data_rx).^2));
+        % for i = 0:(NUM_OF_SIG_FRAME-1)
+        %     for j = 0:(NUM_SYMBOLS_IN_A_FRAME-1)
+        %         bit_groups  = reshape(bits_tx(i*), log2(mod_size), []).';
+        %         sym_indices = bi2de(bit_groups, 'left-msb');  % MSB first
+        %         qam_mod     = qammod(sym_indices, mod_size, 'UnitAveragePower', true);
+        % 
+        %     end
+        % end
+
         Pilot_rx = Pilot_rx / sqrt(mean(abs(Pilot_rx).^2));
 
         if i == NUM_OF_SIG_FRAME-1

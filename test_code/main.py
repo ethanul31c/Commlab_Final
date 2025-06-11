@@ -10,10 +10,10 @@ from image import c420, c420_decom, bit_generator, image_generator
 from PIL import Image
 
 USE_USRP = 1
-QAM_SIZE = 4
+QAM_SIZE = 256
 ANTENNA_MODE = 2
-AMP = 0.01
-print(f"AMP = {AMP*0.2}")
+AMP_HEADER = 0.1
+AMP_DATA = 0.1
 
 try:
     sess = matlab.engine.start_matlab("")
@@ -29,18 +29,18 @@ def main():
 
     filename = "Peppers"
     raw_img = plt.imread(f"../test_image/{filename}.bmp")
-    # plt.imshow(raw_img)
-    # plt.show()
+    plt.imshow(raw_img)
+    plt.show()
     c420.c420(raw_img, filename)
     com_img = np.load(f"../buffer/{filename}_com.npy")
     bit_generator.bit_generator(com_img, filename)
     send_image(filename)
     receive_image(filename)
-    com_img_recv = np.load(f"../buffer/{filename}_bit_received.npy")
-    image_generator.image_generator(com_img_recv, com_img.shape, filename)
-
+    bit_img_recv = np.load(f"../buffer/{filename}_bit_received.npy")
+    image_generator.image_generator(bit_img_recv, com_img.shape, filename)
     com_img_recv = np.load(f"../buffer/{filename}_com_received.npy")
     c420_decom.c420_decom(com_img_recv, filename)
+
     recv_img = plt.imread(f"../test_image/{filename}_decom.bmp")
     plt.imshow(recv_img)
     plt.show()
@@ -62,7 +62,7 @@ def send_image(filename):
     data = np.load(f'../buffer/{filename}_bit.npy') #should be bit 
     mat_data = {'bits_tx': data}
     savemat(f'{filename}.mat', mat_data)
-    sess.test_one_frame(filename, USE_USRP, QAM_SIZE, ANTENNA_MODE, AMP, nargout=0)
+    sess.test_one_frame(filename, USE_USRP, QAM_SIZE, ANTENNA_MODE, AMP_DATA, AMP_HEADER, nargout=0)
 
 
 def plot_whole_buffer():
