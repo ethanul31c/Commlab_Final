@@ -14,6 +14,7 @@ QAM_SIZE = 256
 ANTENNA_MODE = 2
 AMP_HEADER = 0.1
 AMP_DATA = 0.1
+COMPRESSION = "c420"
 
 try:
     sess = matlab.engine.start_matlab("")
@@ -31,7 +32,9 @@ def main():
     raw_img = plt.imread(f"../test_image/{filename}.bmp")
     plt.imshow(raw_img)
     plt.show()
-    c420.c420(raw_img, filename)
+    if COMPRESSION == "c420":
+        c420.c420(raw_img, filename)
+
     com_img = np.load(f"../buffer/{filename}_com.npy")
     bit_generator.bit_generator(com_img, filename)
     send_image(filename)
