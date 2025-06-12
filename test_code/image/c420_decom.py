@@ -19,6 +19,6 @@ def c420_decom(img_ycbcr_com, filename):
   return
 
 if __name__ == "__main__":
-  data = np.load("./../../buffer/Pepper_com_quantized.npy")
-  c420_decom(data, "Peppers_quantized")
+  data = np.load("./../../buffer/Peppers_com_received.npy")
+  c420_decom(data, "Peppers")
   
