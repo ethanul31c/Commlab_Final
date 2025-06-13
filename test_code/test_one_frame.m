@@ -161,7 +161,7 @@ function test_one_frame(ENABLE_PROTOCOL, filename, useUSRP, QAM_size_int, USRP_M
         release(radio_Tx)
         release(radio_Rx)
         single_LTS = LTS(end-64+1:end);
-        [sts_start, frame_starts, ofdm_start] = find_starts(buffer, 1, single_LTS, NUM_OF_SIG_FRAME);
+        [sts_start, frame_starts, ofdm_start] = find_starts(buffer, 1, single_LTS, NUM_OF_SIG_FRAME, NUM_SYMBOLS_IN_A_FRAME);
         fprintf("ofdm_start = %d\n" ,ofdm_start);
         savename = sprintf("%s_channel_%dQAM.mat",filename, QAM_size_int);
         save(savename, "sts_start", "frame_starts", "ofdm_start", "single_STS", "single_LTS", "buffer");

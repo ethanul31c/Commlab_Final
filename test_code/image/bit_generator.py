@@ -4,6 +4,7 @@ import os
 def bit_generator(a, filename):
   a = a/2 + 128
   b = np.unpackbits(a.astype(np.uint8))
+  print(b.shape)
   np.save(os.path.join(os.path.dirname(__file__), f'../../buffer/{filename}_bit.npy'), b)
 
 if __name__ == "__main__":
