@@ -1,4 +1,4 @@
-function demod_test(filename, QAM_size_int)
+function demod_test(ENABLE_PROTOCOL, filename, QAM_size_int)
     % clc; clear; close all;
     
     global pilot_idx;
@@ -60,23 +60,8 @@ function demod_test(filename, QAM_size_int)
     bits_tx_padded = [bits_tx, zeros(1, pad_len)];  % 補 0
     bits_tx_matrix = reshape(bits_tx_padded, LEN_SEC, []).';  % 每 row 有 LEN_SEC 個
     [NUM_OF_SIG_FRAME, ~] = size(bits_tx_matrix);
-    % genterating OFDM symbol
+
     
-    
-    % bits_tx = qamdemod(data_tx, 16, 'gray', OutputType='bit', UnitAveragePower=true);
-    
-    %% MAIN CODE of Transmiting Signal with USRP
-    
-    pad_length       = 100; % in both front and end
-    CONST_OF_DELAY   = 20000;
-    
-    LENGTH_OF_FRAME  = L_sig + 2*pad_length; % frame - length
-    FRAME_DELAY      = ceil(CONST_OF_DELAY / LENGTH_OF_FRAME);
-    
-    
-    NUM_OF_SIG_FRAME;
-    NUM_OF_TX_FRAME  = FRAME_DELAY+NUM_OF_SIG_FRAME;
-    NUM_OF_RX_FRAME  = NUM_OF_TX_FRAME + 3;
     
     buffer = 0; % 占掉名稱
     %load ("received_test.mat")
@@ -89,7 +74,7 @@ function demod_test(filename, QAM_size_int)
     
     for i = 1: NUM_OF_SIG_FRAME
         %% P_sig (for SNR calculation)
-        ofdm_start = frame_starts(i) + 128;
+        ofdm_start = frame_starts(i) + 128 +;
         P_sig = mean(abs(buffer(ofdm_start:ofdm_start+NUM_SYMBOLS_IN_A_FRAME*(N_FFT+N_CP)-1)).^2);
         P_noise = mean(abs([ ...
             buffer((frame_starts(i)-128-100):(frame_starts(i)-128-1));...

@@ -1,5 +1,6 @@
 % find starts
-function [sts_start, frame_starts, ofdm_start] = find_starts(buffer_trimmed, sec_beg, single_LTS)
+function [sts_start, frame_starts, ofdm_start] = find_starts_LSIG(buffer_trimmed, sec_beg, single_LTS)
+    global N_OFDM
     conv_sig_LTS = conv(buffer_trimmed, flipud(conj(single_LTS)), "valid"); % index range should be adjusted
     plot(abs(conv_sig_LTS));
     crit_lts = max(abs(conv_sig_LTS))*0.7;
@@ -13,6 +14,6 @@ function [sts_start, frame_starts, ofdm_start] = find_starts(buffer_trimmed, sec
     %lts_start = sec_beg + lts_peaks(1)-1;
 
     sts_start = sec_beg + lts_peaks(1)-1 - 32 - 160;
-    ofdm_start = sts_start + 360;
+    ofdm_start = sts_start + 320 + N_OFDM;
 end
 

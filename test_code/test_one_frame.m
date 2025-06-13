@@ -1,5 +1,5 @@
 % function wifi_802_11_a()
-function test_one_frame(filename, useUSRP, QAM_size_int, USRP_MODE, data_amp, header_amp)
+function test_one_frame(ENABLE_PROTOCOL, filename, useUSRP, QAM_size_int, USRP_MODE, data_amp, header_amp)
     
     USRP_ENABLE = useUSRP; % send and save signal when == 1
     % clc; clear; close all;
@@ -45,9 +45,17 @@ function test_one_frame(filename, useUSRP, QAM_size_int, USRP_MODE, data_amp, he
 
 
     % K-OFDM
-    NUM_SYMBOLS_IN_A_FRAME = 100;  % number of ofdm symbols in each frame
-    L_head  = 320;
-    L_sig   = L_head + NUM_SYMBOLS_IN_A_FRAME * (N_OFDM);
+    if ENABLE_PROTOCOL == 0
+        NUM_SYMBOLS_IN_A_FRAME = 100;  % number of ofdm symbols in each frame
+        L_head  = 320;
+    elseif ENABLE_PROTOCOL == 1
+        load("protocol_config.mat");
+        NUM_SYMBOLS_IN_A_FRAME = num_symbols;
+        L_head = 400;
+        
+
+    end
+    L_data   = L_head + NUM_SYMBOLS_IN_A_FRAME * (N_OFDM);
     % scaling of transmitted amplitude
     send_amp_all = header_amp;
     fprintf("header amp = %.5f\n", send_amp_all)
@@ -56,7 +64,6 @@ function test_one_frame(filename, useUSRP, QAM_size_int, USRP_MODE, data_amp, he
     
     % segmenting bitstream
     
-    % QAM_size = 64; % 4 for 4 QAM
     NUM_BITS_PER_SYMBOL = log2(QAM_size) * length(data_idx); % 96 for 4QAM
     
 
@@ -69,10 +76,10 @@ function test_one_frame(filename, useUSRP, QAM_size_int, USRP_MODE, data_amp, he
     [STS, single_STS] = STS_generate();
     [LTS, single_LTS] = LTS_generate();
 
-    sig_tx = zeros(NUM_OF_SIG_FRAME, L_sig);
+    sig_tx = zeros(NUM_OF_SIG_FRAME, L_data);
 
     for i = 0:(NUM_OF_SIG_FRAME-1)
-        sig_frame = zeros(L_sig, 1);
+        sig_frame = zeros(L_data, 1);
         sig_frame(1:length(STS)) = STS;
         sig_frame(length(STS)+1:length(STS)+length(LTS))= LTS;
 
@@ -98,7 +105,7 @@ function test_one_frame(filename, useUSRP, QAM_size_int, USRP_MODE, data_amp, he
     pad_length       = 100; % in both front and end
     CONST_OF_DELAY   = 20000;
     
-    LENGTH_OF_FRAME  = L_sig + 2*pad_length; % frame - length
+    LENGTH_OF_FRAME  = L_data + 2*pad_length; % frame - length
     FRAME_DELAY      = ceil(CONST_OF_DELAY / LENGTH_OF_FRAME);
 
 
