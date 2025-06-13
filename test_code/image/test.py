@@ -1,14 +1,26 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import os
-# from c420 import H
-# a = np.array([[1,2,3],[4,5,6]])
-# b = (a-128)*2
-# print(b)
-# H = np.array([[0.299, 0.587, 0.114],
-#        [-0.169, -0.331, 0.500],
-#        [0.500, -0.419, -0.081]])
-# print(np.linalg.inv(H))
-a = np.load("../../buffer/Peppers_com.npy")
-b = np.round(a)
-np.save(os.path.join(os.path.dirname(__file__), f"../../buffer/Pepper_com_quantized.npy"), b)
+import os, sys
+import matlab.engine
+from scipy.io import savemat
+from scipy.io import loadmat
+
+
+# try:
+#     sess = matlab.engine.start_matlab("")
+#     print("MATLAB 啟動成功！")
+# except Exception as e:
+#     print("MATLAB 啟動失敗：", str(e))
+#     sys.exit(1)  # 非 0 表示異常退出，程式會停止在這裡
+
+# sess.cd(os.getcwd())
+# sum = sess.add(1,2)
+# print(sum)
+a = np.array([1,2,3])
+b = np.array([4,5,6])
+# print(type(a))
+np.savez("./testt.npz", a=a, b=b)
+c = np.load("./testt.npz")
+# print(c)
+print(c['a'])
+print(c['b'])

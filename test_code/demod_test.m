@@ -1,6 +1,5 @@
-function demod_test(ENABLE_PROTOCOL, filename, QAM_size_int)
+function SNR_dB = demod_test(ENABLE_PROTOCOL, filename, QAM_size_int)
     % clc; clear; close all;
-    
     global pilot_idx;
     global data_idx;
     global zero_idx;
@@ -192,7 +191,7 @@ function demod_test(ENABLE_PROTOCOL, filename, QAM_size_int)
     save(file_str, "bits_rx")
     fprintf("SNR = %.5f dB\n", SNR_dB);
     fprintf("BER = %.5f\n", BER);
-
+    
 end
 
 %demod_tes()
