@@ -6,7 +6,7 @@ import sys
 import os
 import matplotlib.pyplot as plt
 sys.path.append("./image")
-from image import c420, c420_decom, bit_generator, image_generator
+from image import c420, c420_decom, bit_generator, image_generator, psnr, ssim
 from PIL import Image
 
 USE_USRP = 1
@@ -25,9 +25,10 @@ except Exception as e:
 
 sess.cd(os.getcwd())
 
-
+AMP_DATA = np.array([0.02, 0.05, 0.1])
 def main():
-
+    SNR_list = np.zeros(AMP_DATA.shape)
+    SSIM_list = np.zeros(AMP_DATA.shape)
     filename = "Peppers"
     raw_img = plt.imread(f"../test_image/{filename}.bmp")
     plt.imshow(raw_img)
@@ -37,31 +38,41 @@ def main():
 
     com_img = np.load(f"../buffer/{filename}_com.npy")
     bit_generator.bit_generator(com_img, filename)
-    send_image(filename)
-    receive_image(filename)
-    bit_img_recv = np.load(f"../buffer/{filename}_bit_received.npy")
-    image_generator.image_generator(bit_img_recv, com_img.shape, filename)
-    com_img_recv = np.load(f"../buffer/{filename}_com_received.npy")
-    c420_decom.c420_decom(com_img_recv, filename)
+    for i in range(AMP_DATA.size):
+        send_image(filename, AMP_DATA[i])
+        SNR_list[i] = receive_image(filename)
+        bit_img_recv = np.load(f"../buffer/{filename}_bit_received.npy")
+        image_generator.image_generator(bit_img_recv, com_img.shape, filename)
+        com_img_recv = np.load(f"../buffer/{filename}_com_received.npy")
+        c420_decom.c420_decom(com_img_recv, filename)
 
-    recv_img = plt.imread(f"../test_image/{filename}_decom.bmp")
-    plt.imshow(recv_img)
-    plt.show()
-
+        recv_img = plt.imread(f"../test_image/{filename}_decom.bmp")
+        plt.imshow(recv_img)
+        plt.show()
+        SSIM_list[i] = ssim.ssim(raw_img, recv_img)
+    print(SNR_list)
+    print(SSIM_list)
+    np.savez(f"../snr_ssim/{QAM_SIZE}.npz", SNR_list = SNR_list, SSIM_list = SSIM_list)
+    # plt.figure()
+    # plt.plot(SNR_list, SSIM_list, marker = '*')
+    # plt.title("SSIM vs SNR")
+    # plt.xlabel("SNR (db)")
+    # plt.ylabel("SSIM")
+    # plt.show()
     input("請按 Enter 結束...")
 
 # Data Flow: npy -> .mat ---Channel---> .mat ------> .npy
 
 def receive_image(filename):
-    sess.demod_test(filename, QAM_SIZE, nargout=0)
-
+    SNR_dB = sess.demod_test(filename, QAM_SIZE)
     mat_data = loadmat(f'{filename}_received.mat')
 
     bit_stream = mat_data['bits_rx']
     bit_stream = bit_stream.flatten()
     np.save(f'../buffer/{filename}_bit_received.npy', bit_stream)
+    return SNR_dB
 
-def send_image(filename):
+def send_image(filename, AMP_DATA):
     data = np.load(f'../buffer/{filename}_bit.npy') #should be bit 
     mat_data = {'bits_tx': data}
     savemat(f'{filename}.mat', mat_data)
